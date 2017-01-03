@@ -1,7 +1,5 @@
-#coding:utf-8
-import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import calendar
 
 total_lists = 31
@@ -36,22 +34,35 @@ def GetPlannedDayList(year, starting_month):
                     if len(planned_days) - list_number in rev_gaps:
                         planned_days[-1]['Revision'].append(list_number)
                 if len(planned_days[-1]['New']) == 0 and len(planned_days[-1]['Revision']) == 0:
-                    break
-    return planned_days, total_months
+                    return planned_days, total_months
+
+
+def FormatDateInfo(day, newline='\n'):
+    temp_str = '%d-%d-%d-%s:' + newline + '\tNew: ' + len(day['New']) * "%d," + newline + '\tRevision: ' + len(day['Revision']) * '%d,' + newline
+    pargs = [year, day['Month'], day['Date'], day['Week']]
+    pargs.extend(day['New'])
+    pargs.extend(day['Revision'])
+    return temp_str % tuple(pargs)
 
 
 def GetTemplateRawData(planned_days):
     text_output = []
     for day in planned_days:
-        temp_str = '%d-%d-%d-%s:\n\tNew: ' + len(day['New']) * "%d," + '\n\tRevision: ' + len(day['Revision']) * '%d,' + '\n'
-        pargs = [year, day['Month'], day['Date'], day['Week']]
-        pargs.extend(day['New'])
-        pargs.extend(day['Revision'])
-
-        text_output.append(temp_str % tuple(pargs))
+        text_output.append(FormatDateInfo(day))
+        #temp_str = '%d-%d-%d-%s:\n\tNew: ' + len(day['New']) * "%d," + '\n\tRevision: ' + len(day['Revision']) * '%d,' + '\n'
+        #pargs = [year, day['Month'], day['Date'], day['Week']]
+        #pargs.extend(day['New'])
+        #pargs.extend(day['Revision'])
+        #text_output.append(temp_str % tuple(pargs))
 
     return text_output
-        # print temp_str % tuple(pargs)
+
+
+def ClearBlankDatePlaceHolders(line):
+    # Clear Blank placeholders
+    for i in range(0,8):
+        line = line.replace('{$DAY%d}' % i, '')
+    return line
 
 
 def RenderTemplate(raw_data, planned_days, total_months):
@@ -60,9 +71,9 @@ def RenderTemplate(raw_data, planned_days, total_months):
         for line in f:
             base_template.append(line)
 
-    table_head = base_template[0:2]
-    table_end = base_template[3]
-    line_template = base_template[-1]
+    table_head = base_template[0:3]
+    table_end = base_template[-1]
+    line_template = base_template[-2]
     new_line = '<br>'
     output = []
 
@@ -71,22 +82,26 @@ def RenderTemplate(raw_data, planned_days, total_months):
     current_month = planned_days[0]['Month']
 
     real_template.extend(table_head)
-    real_template[1].replace("{$MONTH}", str(current_month))
-    real_template[1].replace("{$YEAR}", str(2017))
+    real_template[1] = real_template[1].replace("{$YEAR}", str(2017).encode('utf-8'))
+    real_template[1] = real_template[1].replace("{$MONTH}", str(current_month))
     real_template.append(line_template)
 
     for day in planned_days:
         if day['Month'] != current_month:
+            real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
             current_month = day['Month']
             real_template.append(table_end)
             real_template.append(new_line)
             real_template.extend(table_head)
-            real_template[-2].replace('{$MONTH}'.decode('utf-8'), str(current_month))
-            real_template[-2].replace('{$YEAR}', str(2017))
+            real_template[-2] = real_template[-2].replace('{$MONTH}'.decode('utf-8'), str(current_month))
+            real_template[-2] = real_template[-2].replace('{$YEAR}', str(2017))
             real_template.append(line_template)
         elif day['Weekday'] == 1:
+            real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
             real_template.append(line_template)
-        real_template[-1].replace('{$DAY%d}' % (day['Weekday']), str(day['Date']))
+        real_template[-1] = real_template[-1].replace('{$DAY%d}' % (day['Weekday']), FormatDateInfo(day, '<br>'))
+    real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
+    real_template.append(table_end)
 
     return real_template
 
