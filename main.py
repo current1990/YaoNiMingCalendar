@@ -96,7 +96,7 @@ def RenderTemplate(raw_data, planned_days, total_months):
             real_template[-2] = real_template[-2].replace('{$MONTH}'.decode('utf-8'), str(current_month))
             real_template[-2] = real_template[-2].replace('{$YEAR}', str(2017))
             real_template.append(line_template)
-        elif day['Weekday'] == 1:
+        elif day['Weekday'] == 0:
             real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
             real_template.append(line_template)
         real_template[-1] = real_template[-1].replace('{$DAY%d}' % (day['Weekday'] + 1), FormatDateInfo(day, '<br>'))
