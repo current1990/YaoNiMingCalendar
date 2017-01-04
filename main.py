@@ -9,7 +9,7 @@ year = 2017
 month = 1
 start_date = 1
 
-weekday_str = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+weekday_str = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 gaps = []
 rev_gaps = [0, 1, 2, 4, 7, 15]
@@ -24,8 +24,8 @@ def GetPlannedDayList(year, starting_month):
             if date == 0:
                 continue
             else:
-                if weekday == 0:
-                    weekday = 7
+                #if weekday == 0:
+                #    weekday = 7
                 planned_days.append({'Month': month_cnt, 'Date':date,
                                      'Weekday': weekday, 'Week':weekday_str[weekday], 'New':[], 'Revision':[]})
                 for list_number in range(1, min(len(planned_days) + 1, total_lists)):
@@ -99,7 +99,7 @@ def RenderTemplate(raw_data, planned_days, total_months):
         elif day['Weekday'] == 1:
             real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
             real_template.append(line_template)
-        real_template[-1] = real_template[-1].replace('{$DAY%d}' % (day['Weekday']), FormatDateInfo(day, '<br>'))
+        real_template[-1] = real_template[-1].replace('{$DAY%d}' % (day['Weekday'] + 1), FormatDateInfo(day, '<br>'))
     real_template[-1] = ClearBlankDatePlaceHolders(real_template[-1])
     real_template.append(table_end)
 
